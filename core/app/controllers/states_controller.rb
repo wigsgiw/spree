@@ -11,6 +11,7 @@ class StatesController < Spree::BaseController
     State.order("name ASC").each{|state|
       @state_info[state.country_id.to_s].push [state.id, state.name]
     }
+    invoke_callbacks(:index, :before)
   end
 
 end

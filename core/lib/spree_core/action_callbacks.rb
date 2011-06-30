@@ -1,25 +1,30 @@
 module Spree
   class ActionCallbacks
-    attr_reader :before_methods
-    attr_reader :after_methods
-    attr_reader :fails_methods
-    
+    attr_reader :befores
+    attr_reader :afters
+    attr_reader :fails
+
     def initialize
-      @before_methods = []
-      @after_methods = []
-      @fails_methods = []
+      @befores = []
+      @afters = []
+      @fails = []
     end
-    
-    def before(method)
-      @before_methods << method
+
+    def before(method=nil, &block)
+      @befores << (block_given? ? block : method)
     end
-    
-    def after(method)
-      @after_methods << method
+
+    def after(method=nil, &block)
+      @afters << (block_given? ? block : method)
     end
-    
-    def fails(method)
-      @fails_methods << method
+
+    def fail(method=nil, &block)
+      @fails << (block_given? ? block : method)
+    end
+
+    def response(*args, &block)
+      puts "[WARNING] Support for action.response has been removed, please use \"respond_override\" instead."
+      puts "         The custom response defined by \"#{caller[0]}\" will be IGNORED."
     end
   end
 

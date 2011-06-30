@@ -1,19 +1,33 @@
-require 'spree_core/action_callbacks'
 class Admin::ResourceController < Admin::BaseController
   helper_method :new_object_url, :edit_object_url, :object_url, :collection_url
   before_filter :load_resource
 
   respond_to :html
-  respond_to :js, :except => [:show, :index]
+  respond_to :js, :except => [:show, :index, :new]
+
+  def index
+    invoke_callbacks(:index, :before)
+    respond_with(@collection) do |format|
+      format.html { render :layout => !request.xhr? }
+    end
+  end
 
   def new
+    invoke_callbacks(:new_action, :before)
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }
-      format.js { render :layout => false }
+    end
+  end
+
+  def show
+    invoke_callbacks(:show, :before)
+    respond_with(@object) do |format|
+      format.html { render :layout => !request.xhr? }
     end
   end
 
   def edit
+    invoke_callbacks(:edit, :before)
     respond_with(@object) do |format|
       format.html { render :layout => !request.xhr? }
       format.js { render :layout => false }
@@ -32,7 +46,7 @@ class Admin::ResourceController < Admin::BaseController
         format.js   { render :layout => false }
       end
     else
-      invoke_callbacks(:update, :fails)
+      invoke_callbacks(:update, :fail)
       respond_with(@object)
     end
   end
@@ -49,7 +63,7 @@ class Admin::ResourceController < Admin::BaseController
         format.js   { render :layout => false }
       end
     else
-      invoke_callbacks(:create, :fails)
+      invoke_callbacks(:create, :fail)
       respond_with(@object)
     end
   end
@@ -66,7 +80,7 @@ class Admin::ResourceController < Admin::BaseController
         format.js   { render :partial => "/admin/shared/destroy" }
       end
     else
-      invoke_callbacks(:destroy, :fails)
+      invoke_callbacks(:destroy, :fail)
       respond_with(@object) do |format|
         format.html { redirect_to collection_url }
       end
@@ -77,7 +91,6 @@ class Admin::ResourceController < Admin::BaseController
 
   class << self
     attr_accessor :parent_data
-    attr_accessor :callbacks
 
     def belongs_to(model_name, options = {})
       @parent_data ||= {}
@@ -86,20 +99,6 @@ class Admin::ResourceController < Admin::BaseController
       @parent_data[:find_by] = options[:find_by] || :id
     end
 
-    def create
-      @callbacks ||= {}
-      @callbacks[:create] ||= Spree::ActionCallbacks.new
-    end
-
-    def update
-      @callbacks ||= {}
-      @callbacks[:update] ||= Spree::ActionCallbacks.new
-    end
-
-    def destroy
-      @callbacks ||= {}
-      @callbacks[:destroy] ||= Spree::ActionCallbacks.new
-    end
   end
 
   def model_class
@@ -169,16 +168,6 @@ class Admin::ResourceController < Admin::BaseController
 
   def location_after_save
     collection_url
-  end
-
-  def invoke_callbacks(action, callback_type)
-    callbacks = self.class.callbacks || {}
-    return if callbacks[action].nil?
-    case callback_type.to_sym
-      when :before then callbacks[action].before_methods.each {|method| send method }
-      when :after  then callbacks[action].after_methods.each  {|method| send method }
-      when :fails  then callbacks[action].fails_methods.each  {|method| send method }
-    end
   end
 
   # URL helpers

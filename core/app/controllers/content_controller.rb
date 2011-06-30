@@ -8,6 +8,7 @@ class ContentController < Spree::BaseController
   respond_to :html
 
   def show
+    invoke_callbacks(:edit, :before)
     respond_with do |format|
       format.html { render :action => params[:path] }
     end

@@ -1,5 +1,7 @@
 class UserSessionsController < Devise::SessionsController
   include SpreeBase
+  include Spree::ActionCallbackHooks
+  
   helper :users, 'spree/base'
 
   include Spree::CurrentOrder
@@ -11,13 +13,18 @@ class UserSessionsController < Devise::SessionsController
 
   # GET /resource/sign_in
   def new
+    invoke_callbacks(:new_action, :before)
     super
   end
 
   def create
+    invoke_callbacks(:create, :before)
+
     authenticate_user!
 
     if user_signed_in?
+      invoke_callbacks(:create, :after)
+
       respond_to do |format|
         format.html {
           flash[:notice] = I18n.t("logged_in_succesfully")
@@ -30,11 +37,14 @@ class UserSessionsController < Devise::SessionsController
       end
     else
       flash[:error] = I18n.t("devise.failure.invalid")
+      invoke_callbacks(:create, :fail)
       render :new
     end
   end
 
   def destroy
+    invoke_callbacks(:destroy, :before)
+
     session.clear
     super
   end

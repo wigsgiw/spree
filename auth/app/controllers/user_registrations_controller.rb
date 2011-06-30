@@ -1,5 +1,7 @@
 class UserRegistrationsController < Devise::RegistrationsController
   include SpreeBase
+  include Spree::ActionCallbackHooks
+  
   helper :users, 'spree/base'
 
   ssl_required
@@ -9,36 +11,42 @@ class UserRegistrationsController < Devise::RegistrationsController
 
   # GET /resource/sign_up
   def new
+    invoke_callbacks(:new_action, :before)
     super
   end
 
   # POST /resource/sign_up
   def create
+    invoke_callbacks(:create, :before)
     @user = build_resource(params[:user])
-    logger.debug(@user)
     if resource.save
       set_flash_message(:notice, :signed_up)
       ActiveSupport::Notifications.instrument('spree.user.signup', default_notification_payload.merge(:user => @user))
       fire_event('spree.user.signup', :user => @user)
+      invoke_callbacks(:create, :after)
       sign_in_and_redirect(:user, @user)
     else
       clean_up_passwords(resource)
+      invoke_callbacks(:create, :fail)
       render_with_scope(:new)
     end
   end
 
   # GET /resource/edit
   def edit
+    invoke_callbacks(:edit, :before)
     super
   end
 
   # PUT /resource
   def update
+    invoke_callbacks(:update, :before)
     super
   end
 
   # DELETE /resource
   def destroy
+    invoke_callbacks(:destroy, :before)
     super
   end
 

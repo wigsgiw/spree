@@ -23,6 +23,7 @@ class Admin::OverviewController < Admin::BaseController
     @best_selling_taxons = best_selling_taxons
 
     @pie_colors = [ "#0093DA", "#FF3500", "#92DB00", "#1AB3FF", "#FFB800"]
+    invoke_callbacks(:index, :before)
   end
 
   def get_report_data

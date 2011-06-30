@@ -68,6 +68,8 @@ require 'redirect_legacy_product_url'
 require 'middleware/seo_assist'
 
 require 'spree_base' # added 11-3 JBD
+require 'spree_core/action_callback_hooks'
+require 'spree_core/action_callbacks'
 
 silence_warnings do
   require 'spree_core/authorize_net_cim_hack'

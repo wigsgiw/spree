@@ -8,6 +8,7 @@ class ProductsController < Spree::BaseController
   def index
     @searcher = Spree::Config.searcher_class.new(params)
     @products = @searcher.retrieve_products
+    invoke_callbacks(:index, :before)
     respond_with(@products)
   end
 
@@ -24,7 +25,7 @@ class ProductsController < Spree::BaseController
     if referer && referer.match(HTTP_REFERER_REGEXP)
       @taxon = Taxon.find_by_permalink($1)
     end
-
+    invoke_callbacks(:show, :before)
     respond_with(@product)
   end
 

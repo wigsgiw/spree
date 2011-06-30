@@ -6,22 +6,27 @@ class OrdersController < Spree::BaseController
 
   def show
     @order = Order.find_by_number!(params[:id])
+    invoke_callbacks(:show, :before)
     respond_with(@order)
   end
 
   def update
     @order = current_order
+    invoke_callbacks(:update, :before)
     if @order.update_attributes(params[:order])
       @order.line_items = @order.line_items.select {|li| li.quantity > 0 }
       fire_event('spree.order.contents_changed')
+      invoke_callbacks(:update, :after)
       respond_with(@order) { |format| format.html { redirect_to cart_path } }
     else
+      invoke_callbacks(:update, :fail)
       respond_with(@order)
     end
   end
 
   # Shows the current incomplete order from the session
   def edit
+    invoke_callbacks(:edit, :before)
     @order = current_order(true)
   end
 
