@@ -172,7 +172,9 @@ class Order < ActiveRecord::Base
   attr_accessor :use_billing
 
   def clone_billing_address
-    if bill_address and self.ship_address.nil?
+    # jrkw - the ship_address is never nil, as we build one if there isn't one. If the "use billing" checkbox is ticked, we clone it no matter what.
+    # if bill_address and self.ship_address.nil?
+    if bill_address
       self.ship_address = bill_address.clone
     else
       self.ship_address.attributes = bill_address.attributes.except("id", "updated_at", "created_at")
